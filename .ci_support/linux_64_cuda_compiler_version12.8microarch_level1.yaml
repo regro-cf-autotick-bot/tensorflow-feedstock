@@ -27,21 +27,21 @@ flatbuffers:
 giflib:
 - '5.2'
 github_actions_labels:
-- namespace-profile-8cpu-on-linux-64
+- namespace-profile-16cpu-on-linux-64
 icu:
 - '78'
 libabseil:
-- '20250512'
+- '20260107'
 libcurl:
 - '8'
 libgrpc:
-- '1.73'
+- '1.78'
 libjpeg_turbo:
 - '3'
 libpng:
 - '1.6'
 libprotobuf:
-- 6.31.1
+- 6.33.5
 libtensorflow_cc:
 - '2.16'
 microarch_level:
