@@ -1,8 +1,8 @@
 schema_version: 1
 
 context:
-  version: "2.19.1"
-  build: 5
+  version: "2.21.0"
+  build: 0
   # Quite often libml_dtypes-headers and ml_dtypes diverge.
   # https://github.com/tensorflow/tensorflow/blob/v2.18.0/third_party/py/ml_dtypes/workspace.bzl
   libml_dtypes_version: "0.5.1"
@@ -15,7 +15,7 @@ recipe:
 
 source:
   - url: https://github.com/tensorflow/tensorflow/archive/refs/tags/v${{ version | replace(".rc", "-rc") }}.tar.gz
-    sha256: fcfb3e88ab3eebdbab98a03c869a4d2616d52ea166c8d8021de1ef921b47be8d
+    sha256: ef3568bb4865d6c1b2564fb5689c19b6b9a5311572cd1f2ff9198636a8520921
     patches:
       - patches/0001-loosen-requirements.patch
       - patches/0002-Add-additional-absl_synchronization-linkage-to-gRPC.patch
@@ -150,18 +150,18 @@ outputs:
             - cudnn
             - nccl
             - cuda-version ${{ cuda_compiler_version }}.*
-        - if: cuda_compiler_version != "None" and cuda_compiler_version[:2] == "12"
-          then:
-            - cuda-cupti-dev
-            - cuda-cudart-dev
-            - cuda-nvml-dev
-            - cuda-nvtx-dev
-            - libcublas-dev
-            - libcusolver-dev
-            - libcurand-dev
-            - libcufft-dev
-            - libcusparse-dev
-            - libnvjitlink-dev
+            - if: cuda_compiler_version[:2] == "12"
+              then:
+                - cuda-cupti-dev
+                - cuda-cudart-dev
+                - cuda-nvml-dev
+                - cuda-nvtx-dev
+                - libcublas-dev
+                - libcusolver-dev
+                - libcurand-dev
+                - libcufft-dev
+                - libcusparse-dev
+                - libnvjitlink-dev
         # If 3.12 is changed, edit recipe/build_pkg.sh too
         - python 3.12.*
         - pip
@@ -380,10 +380,11 @@ outputs:
         - keras >=3.5
         # avoid that people without GPUs needlessly download ~0.5-1GB
         - if: cuda_compiler_version != "None"
-          then: __cuda
+          then:
         # https://github.com/conda-forge/tensorflow-feedstock/issues/296#issuecomment-1835781851
-        - if: cuda_compiler_version != "None" and cuda_compiler_version[:2] == "12"
-          then: cuda-nvcc-tools
+            - __cuda
+            - if: cuda_compiler_version[:2] == "12"
+              then: cuda-nvcc-tools
         - ${{ pin_subpackage("libtensorflow_framework", exact=True) }}
         - ${{ pin_subpackage("libtensorflow_cc", exact=True) }}
     tests:
