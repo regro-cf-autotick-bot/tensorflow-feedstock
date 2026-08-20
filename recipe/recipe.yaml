@@ -2,7 +2,7 @@ schema_version: 1
 
 context:
   version: "2.21.0"
-  build: 0
+  build: 1
   # Quite often libml_dtypes-headers and ml_dtypes diverge.
   # https://github.com/tensorflow/tensorflow/blob/v2.18.0/third_party/py/ml_dtypes/workspace.bzl
   libml_dtypes_version: "0.5.1"
@@ -61,10 +61,9 @@ source:
       - patches/0039-Fix-matmul-unused-result-error.patch
       - patches/0041-Disable-profiler.patch
       - if: aarch64 and target_platform != build_platform
-        then: patches/0042-cross-arch-config.patch
-      - if: aarch64 and target_platform != build_platform
-        then: patches/0045-Force-python-wheel-architecture-to-aarch64.patch
-      # missing <string> include with newer libabseil (20260107+)
+        then:
+          - patches/0042-cross-arch-config.patch
+          - patches/0045-Force-python-wheel-architecture-to-aarch64.patch
       - patches/0046-Add-missing-string-include-in-custom_call_status_int.patch
       # missing <cstring> in vendored re2 with newer absl/GCC 14;
       # adds patch_cmds support to tf_http_archive
@@ -184,11 +183,11 @@ outputs:
         # decide on the cuda variant
         # https://github.com/conda-forge/tensorflow-feedstock/issues/162
         - if: cuda_compiler_version != "None"
-          then: ${{ compiler("cuda") }}
+          then:
         # --config=cuda_clang links with -fuse-ld=lld; the conda clang
         # compiler stack does not pull lld in by itself
-        - if: cuda_compiler_version != "None"
-          then: lld ${{ c_compiler_version }}.*
+            - ${{ compiler("cuda") }}
+            - lld ${{ c_compiler_version }}.*
         - if: linux and x86_64
           then: x86_64-microarch-level ==${{ microarch_level | default("1") }}
         - bazel 7.*
@@ -213,20 +212,20 @@ outputs:
             - cudnn
             - nccl
             - cuda-version ${{ cuda_compiler_version }}.*
-        - if: cuda_compiler_version != "None" and cuda_compiler_version[:2] in ["12", "13"]
-          then:
-            - cuda-cupti-dev
-            - cuda-cccl
-            - cuda-cudart-dev
-            - cuda-nvml-dev
-            - cuda-nvrtc-dev
-            - cuda-nvtx-dev
-            - libcublas-dev
-            - libcusolver-dev
-            - libcurand-dev
-            - libcufft-dev
-            - libcusparse-dev
-            - libnvjitlink-dev
+            - if: cuda_compiler_version[:2] in ["12", "13"]
+              then:
+                - cuda-cupti-dev
+                - cuda-cccl
+                - cuda-cudart-dev
+                - cuda-nvml-dev
+                - cuda-nvrtc-dev
+                - cuda-nvtx-dev
+                - libcublas-dev
+                - libcusolver-dev
+                - libcurand-dev
+                - libcufft-dev
+                - libcusparse-dev
+                - libnvjitlink-dev
         # If 3.12 is changed, edit recipe/build_pkg.sh too
         - python 3.12.*
         - pip
@@ -447,10 +446,11 @@ outputs:
         - keras >=3.12.0
         # avoid that people without GPUs needlessly download ~0.5-1GB
         - if: cuda_compiler_version != "None"
-          then: __cuda
+          then:
         # https://github.com/conda-forge/tensorflow-feedstock/issues/296#issuecomment-1835781851
-        - if: cuda_compiler_version != "None" and cuda_compiler_version[:2] in ["12", "13"]
-          then: cuda-nvcc-tools
+            - __cuda
+            - if: cuda_compiler_version[:2] in ["12", "13"]
+              then: cuda-nvcc-tools
         - ${{ pin_subpackage("libtensorflow_framework", exact=True) }}
         - ${{ pin_subpackage("libtensorflow_cc", exact=True) }}
     tests:
